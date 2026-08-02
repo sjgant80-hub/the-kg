@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Holder · a typed knowledge graph the organs write into</title>
+<meta name="description" content="A typed knowledge graph: the-throat's recognize() edges (kin/complementary/clash), the-room's reuses, mesh-sings' paths — all held in one graph you traverse by edge type. Kin never crosses clash.">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0a0c11">
+<style>
+  :root{
+    --bg:#0a0c11; --panel:#13161e; --panel2:#1a1e28; --border:#252b37; --ink:#e9ecf2; --dim:#868fa1;
+    --gold:#e0b23a; --green:#5fd08a; --red:#e77b6b; --blue:#6fb0ff; --violet:#b79bff; --teal:#4fd0c0;
+    --serif:Georgia,'Times New Roman',serif; --sans:system-ui,-apple-system,'Segoe UI',sans-serif; --mono:ui-monospace,'SFMono-Regular',Menlo,monospace;
+  }
+  @media (prefers-color-scheme:light){ :root{ --bg:#f4f5f2; --panel:#fff; --panel2:#eef0ea; --border:#e0e2da; --ink:#181a20; --dim:#6c7280; } }
+  :root[data-theme=dark]{ --bg:#0a0c11; --panel:#13161e; --panel2:#1a1e28; --border:#252b37; --ink:#e9ecf2; --dim:#868fa1; }
+  :root[data-theme=light]{ --bg:#f4f5f2; --panel:#fff; --panel2:#eef0ea; --border:#e0e2da; --ink:#181a20; --dim:#6c7280; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;min-height:100dvh;padding:24px 16px 56px}
+  .wrap{max-width:900px;margin:0 auto}
+  header{text-align:center;margin:6px 0 18px}
+  .glyph{font-size:32px;line-height:1;color:var(--gold)}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,6vw,44px);letter-spacing:-.02em;margin:6px 0 4px}
+  h1 em{color:var(--gold);font-style:italic}
+  .sub{color:var(--dim);max-width:620px;margin:8px auto 0;font-size:14.5px}
+  .sub b{color:var(--ink)}
+  section{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:16px;margin-top:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:4px}
+  .chip{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:18px;border:1px solid var(--border);background:var(--panel2);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;transition:.12s}
+  .chip .dot{width:9px;height:9px;border-radius:50%}
+  .chip.off{opacity:.35}
+  svg{width:100%;height:auto;display:block;touch-action:manipulation}
+  .edge{stroke-width:1.6;fill:none;transition:opacity .15s,stroke-width .15s}
+  .edge.hidden{opacity:.05} .edge.used{stroke-width:3.2}
+  .node circle{stroke:var(--border);stroke-width:1.5;cursor:pointer;transition:.15s}
+  .node.reach circle{stroke:var(--gold);stroke-width:3}
+  .node.sel circle{stroke:var(--ink);stroke-width:3.5}
+  .node.dim{opacity:.3}
+  .node text{font-family:var(--mono);font-size:11px;fill:var(--ink);pointer-events:none}
+  .meter{font-family:var(--mono);font-size:12.5px;color:var(--dim);text-align:center;margin-top:10px;min-height:20px}
+  .meter b{color:var(--gold)}
+  footer{text-align:center;color:var(--dim);font-family:var(--mono);font-size:11px;margin-top:26px;line-height:1.8}
+  footer a{color:var(--gold);text-decoration:none} footer a:hover{text-decoration:underline}
+  .themebtn{position:fixed;top:14px;right:14px;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--ink);cursor:pointer;font-size:15px}
+</style>
+</head>
+<body>
+<button class="themebtn" id="theme" title="Toggle theme">◐</button>
+<div class="wrap">
+  <header>
+    <div class="glyph">◕</div>
+    <h1>The <em>Holder</em></h1>
+    <p class="sub">The organs produce edges; the graph <b>holds</b> them. Every line here is real: the-throat's <b>recognize()</b> ran over these public folds and emitted <b>kin / complementary / clash</b>; the-room emitted <b>reuses</b>; a path emitted <b>path-through</b>. Click a node to <b>traverse by edge type</b> — and watch that <b>kin never crosses clash</b>.</p>
+  </header>
+
+  <section>
+    <div class="chips" id="filters"></div>
+    <svg id="graph" viewBox="0 0 600 560" preserveAspectRatio="xMidYMid meet" aria-label="typed knowledge graph"></svg>
+    <div class="meter" id="meter">click any node — it traverses outward along the <b>enabled</b> edge types only.</div>
+  </section>
+
+  <footer>
+    the BODY/REMEMBER socket of the Seal (§27) · nodes + typed edges · <a href="https://github.com/sjgant80-hub/the-kg">gate 20/20</a> · serialisable (it remembers)<br>
+    receives edges from <a href="https://sjgant80-hub.github.io/the-throat/">the-throat</a> · the-room · <a href="https://sjgant80-hub.github.io/mesh-sings/">mesh-sings</a> · estate-nest · organ #2 of the anatomy cascade (after <a href="https://sjgant80-hub.github.io/the-wallet/">the-wallet</a>)<br>
+    <a href="https://github.com/sjgant80-hub/the-kg">source</a>
+  </footer>
+</div>
+
+<script type="module">
+import { graph } from './kg.mjs';
+import { seal, recognize } from './throat.mjs';
+
+// ── build a REAL graph: run the-throat over public folds, hold the verdicts as typed edges ──
+const DECKS = {
+  'witness':        ['verify the proof', 'witness the gate, check the key', 'test audit konomify adversary, assert reproducible'],
+  'acg-assessor':   ['verify the proof, audit the rubric', 'check quality, assert, konomify', 'the witness of code'],
+  'the-toll':       ['gate the access, lock the wall', 'proof-of-work at the toll, redress', 'the key opens after the work'],
+  'one-ladder':     ['transmit the signal, encode the carrier', 'radio light sound over the mesh', 'broadcast the stream'],
+  'mesh-sings':     ['broadcast the message, transmit the signal', 'the mesh sings, stream the sound', 'send it over the api'],
+  'fall-remember':  ['the core memory engine', 'the vault holds the state, remember', 'the kernel stores'],
+  'the-wallet':     ['sign the sovereign identity, own the key', 'the ed25519 seed, mint the fork', 'gate the budget'],
+  'the-room':       ['build the plan, debate it', 'the witness verifies at the gate', 'execute the agreed spec'],
+};
+const ids = Object.keys(DECKS);
+const seals = Object.fromEntries(ids.map(k => [k, seal(DECKS[k])]));
+const g = graph();
+for (const k of ids) g.addNode(k, { type: 'seal' });
+// the-throat's recognize() → kin/complementary/clash edges (the wire)
+for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+  const v = recognize(seals[ids[i]], seals[ids[j]]).verdict;
+  if (['kin', 'complementary', 'clash'].includes(v)) g.addEdge(ids[i], ids[j], v, { meta: { via: 'the-throat' } });
+}
+// the-room's estate-hits → reuses ; a mesh-sings path → path-through (mixed organ edges, all held here)
+g.fromEstateHits('the-room', ['witness', 'the-toll']);
+g.fromPath(['one-ladder', 'mesh-sings']);
+
+const COLOR = { kin:'var(--green)', complementary:'var(--gold)', clash:'var(--red)', reuses:'var(--blue)', 'path-through':'var(--teal)', contains:'var(--violet)' };
+const present = [...new Set([...g.edges.values()].map(e => e.type))];
+const enabled = new Set(present);
+
+// ── layout: nodes on a circle ──
+const W = 600, H = 560, cx = W/2, cy = 272, R = 210;
+const pos = {}; ids.forEach((id, i) => { const a = -Math.PI/2 + i*2*Math.PI/ids.length; pos[id] = { x: cx + R*Math.cos(a), y: cy + R*Math.sin(a), a }; });
+
+const svg = document.getElementById('graph');
+let selected = null;
+
+function render(reach = new Set(), usedKeys = new Set()) {
+  const symDrawn = new Set();
+  let edgeSVG = '';
+  for (const e of g.edges.values()) {
+    if (e.type==='kin'||e.type==='complementary'||e.type==='clash') { const canon=[e.from,e.to].sort().join('|')+e.type; if(symDrawn.has(canon)) continue; symDrawn.add(canon); }
+    const a = pos[e.from], b = pos[e.to]; if (!a || !b) continue;
+    const on = enabled.has(e.type);
+    const k = e.from+' '+e.type+' '+e.to;
+    const used = usedKeys.has(k) || usedKeys.has(e.to+' '+e.type+' '+e.from);
+    edgeSVG += `<path class="edge${on?'':' hidden'}${used?' used':''}" d="M${a.x.toFixed(1)},${a.y.toFixed(1)} Q${cx},${cy} ${b.x.toFixed(1)},${b.y.toFixed(1)}" stroke="${COLOR[e.type]||'var(--dim)'}"/>`;
+  }
+  let nodeSVG = '';
+  for (const id of ids) {
+    const p = pos[id];
+    const cls = 'node' + (id===selected?' sel':'') + (reach.has(id)&&id!==selected?' reach':'') + (selected&&!reach.has(id)&&id!==selected?' dim':'');
+    const lx = p.x + (Math.cos(p.a)>=0? 14 : -14), anchor = Math.cos(p.a)>=0? 'start':'end';
+    nodeSVG += `<g class="${cls}" data-id="${id}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="var(--panel2)"/><text x="${lx.toFixed(1)}" y="${(p.y+4).toFixed(1)}" text-anchor="${anchor}">${id}</text></g>`;
+  }
+  svg.innerHTML = edgeSVG + nodeSVG;
+  svg.querySelectorAll('.node').forEach(el => el.onclick = () => select(el.dataset.id));
+}
+
+function select(id) {
+  selected = id;
+  const t = g.traverse(id, { edgeTypes: [...enabled] });
+  const usedKeys = new Set(t.edges.map(e => e.from+' '+e.type+' '+e.to));
+  render(t.visited, usedKeys);
+  const reached = t.visited.size - 1;
+  const byType = {}; for (const e of t.edges) byType[e.type] = (byType[e.type]||0)+1;
+  const detail = Object.entries(byType).map(([k,v]) => `${v} ${k}`).join(' · ') || 'no enabled edges from here';
+  document.getElementById('meter').innerHTML = `<b>${id}</b> reaches <b>${reached}</b> node${reached===1?'':'s'} via the enabled types — ${detail}`;
+}
+
+// ── filter chips ──
+document.getElementById('filters').innerHTML = present.map(t =>
+  `<span class="chip" data-t="${t}"><span class="dot" style="background:${COLOR[t]||'var(--dim)'}"></span>${t}</span>`).join('');
+document.getElementById('filters').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const t = c.dataset.t;
+  if (enabled.has(t)) { enabled.delete(t); c.classList.add('off'); } else { enabled.add(t); c.classList.remove('off'); }
+  if (selected) select(selected); else render();
+});
+
+const root=document.documentElement;
+document.getElementById('theme').onclick=()=>{ const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'); root.setAttribute('data-theme',cur==='dark'?'light':'dark'); if(selected) select(selected); else render(); };
+
+render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
